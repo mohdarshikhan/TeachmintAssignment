@@ -5,14 +5,11 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
 import android.os.Build
-import com.mak.app.teachmintassignment.BuildConfig
 import com.mak.app.teachmintassignment.data.ApiResult
 import com.mak.app.teachmintassignment.data.model.ApiError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.HttpException
 import java.util.concurrent.TimeUnit
@@ -49,14 +46,6 @@ class NetworkUtility @Inject constructor(
 
         val builder = OkHttpClient.Builder()
 
-//        builder.addInterceptor{ chain ->
-//            try {
-//                chain.proceed(getNewBuilder(chain))
-//            } catch (ex: Exception) {
-//                throw ex
-//            }
-//        }
-
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
 
@@ -66,20 +55,6 @@ class NetworkUtility @Inject constructor(
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .build()
-    }
-
-    private fun getNewBuilder(chain: Interceptor.Chain): Request {
-        val newBuilder = chain.request().newBuilder()
-
-        newBuilder.header(
-            "Authorization",
-            "Bearer " + BuildConfig.TOKEN
-        )
-
-//        newBuilder.header("Accept", "application/vnd.github+json")
-//        newBuilder.header("X-GitHub-Api-Version", "2022-11-28")
-
-        return newBuilder.build()
     }
 
     fun <T: Any> safeApiCall(

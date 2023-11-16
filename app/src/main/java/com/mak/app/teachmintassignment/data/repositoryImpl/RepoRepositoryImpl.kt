@@ -14,9 +14,9 @@ class RepoRepositoryImpl @Inject constructor(
     private val appApis: AppApis
 ) : RepoRepository {
 
-    override fun getRepoList(q: String, page: Int): Flow<ApiResult<RepoListResponse>> =
+    override fun getRepoList(token: String, q: String, page: Int): Flow<ApiResult<RepoListResponse>> =
         flow {
-            networkUtility.safeApiCall { appApis.getRepoList(q, page, 10) }
+            networkUtility.safeApiCall { appApis.getRepoList(token, q, page, 10) }
                 .collect { result -> emit(result) }
         }
 

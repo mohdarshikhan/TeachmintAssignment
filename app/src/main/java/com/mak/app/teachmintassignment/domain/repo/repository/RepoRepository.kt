@@ -5,6 +5,6 @@ import com.mak.app.teachmintassignment.domain.repo.model.RepoListResponse
 import kotlinx.coroutines.flow.Flow
 
 interface RepoRepository {
-    fun getRepoList(q: String, page: Int): Flow<ApiResult<RepoListResponse>>
+    fun getRepoList(token: String, q: String, page: Int): Flow<ApiResult<RepoListResponse>>
 
 }

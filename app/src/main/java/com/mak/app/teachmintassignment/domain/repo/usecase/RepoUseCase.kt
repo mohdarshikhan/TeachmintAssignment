@@ -17,7 +17,7 @@ class RepoUseCase @Inject constructor(
     /**
      * This will get call from home screen
      */
-    operator fun invoke(q: String?, page: Int): Flow<ApiResult<RepoListResponse>> =
+    operator fun invoke(token: String, q: String?, page: Int): Flow<ApiResult<RepoListResponse>> =
         flow {
             if (q.isNullOrBlank() || q.isEmpty()) {
                 emit(
@@ -29,7 +29,7 @@ class RepoUseCase @Inject constructor(
                     )
                 )
             } else {
-                repository.getRepoList(q, page).collect { result ->
+                repository.getRepoList(token, q, page).collect { result ->
                     when (result) {
                         is ApiResult.Loading -> {
                             emit(ApiResult.Loading())
