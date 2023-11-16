@@ -39,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,8 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.mak.app.teachmintassignment.BuildConfig
-import com.mak.app.teachmintassignment.R
 import com.mak.app.teachmintassignment.domain.repo.model.Items
 import com.mak.app.teachmintassignment.ui.home.viewModel.HomeViewModel
 
@@ -189,7 +188,7 @@ fun RepoListItem(item: Items) {
 @Composable
 private fun RepoImage(url: String) {
     Image(
-        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+        painter = rememberAsyncImagePainter(model = url),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier
