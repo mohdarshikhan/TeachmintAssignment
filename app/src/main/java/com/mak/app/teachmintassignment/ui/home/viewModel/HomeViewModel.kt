@@ -24,7 +24,7 @@ class HomeViewModel @Inject constructor(
     private val _RepoListResponse = MutableStateFlow<ArrayList<Items>>(ArrayList())
     val repoListResponse = _RepoListResponse.asStateFlow()
 
-    fun getRepoList(token: String, q: String, page: Int) {
+    fun getRepoList(token: String, q: String, page: Int, oldData: ArrayList<Items>) {
         repoUseCase(token, q, page).onEach { result ->
             when (result) {
                 is ApiResult.Loading -> {
@@ -34,7 +34,12 @@ class HomeViewModel @Inject constructor(
                 is ApiResult.Success -> {
                     hideProgressFlow.emit(true)
                     _RepoResponse.emit(result.data)
-                    _RepoListResponse.emit(result.data.items)
+//                    _RepoListResponse.emit(result.data.items)
+
+                    oldData.addAll(result.data.items)
+
+                    _RepoListResponse.emit(oldData)
+
                 }
 
                 is ApiResult.Error -> {

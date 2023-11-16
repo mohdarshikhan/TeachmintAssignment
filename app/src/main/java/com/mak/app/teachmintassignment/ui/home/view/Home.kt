@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,6 +38,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +53,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.mak.app.teachmintassignment.BuildConfig
 import com.mak.app.teachmintassignment.domain.repo.model.Items
+import com.mak.app.teachmintassignment.domain.repo.model.RepoListResponse
 import com.mak.app.teachmintassignment.ui.home.viewModel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +61,9 @@ import com.mak.app.teachmintassignment.ui.home.viewModel.HomeViewModel
 fun Home(navController: NavHostController) {
 
     val homeViewModel: HomeViewModel = hiltViewModel()
+    val repoResponse: State<RepoListResponse> = homeViewModel.repoResponse.collectAsState()
     val repoListResponse: State<ArrayList<Items>> = homeViewModel.repoListResponse.collectAsState()
+
     val error = homeViewModel.error.collectAsState()
     val showProgress = homeViewModel.showProgress.collectAsState()
 
@@ -64,6 +71,25 @@ fun Home(navController: NavHostController) {
     var active by remember { mutableStateOf(false) } // Active state for SearchBar
     val searchHistory = remember { mutableStateListOf("") }
 
+    val scrollState = rememberLazyListState()
+    var page = 1
+
+    // Observe scroll position
+    LaunchedEffect(scrollState) {
+        snapshotFlow { scrollState.firstVisibleItemIndex }
+            .collect { index ->
+                if (index + 1 >= repoListResponse.value.size - 5) {
+                    // Load the next page when the user is close to the end
+//                    if (repoResponse.value?.totalCount != null) {
+//                        if (repoListResponse.value.size < repoResponse.value?.totalCount!!) {
+//                        }
+//                    }
+
+                    page += 1
+                    homeViewModel.getRepoList(BuildConfig.TOKEN, text, page, repoListResponse.value)
+                }
+            }
+    }
 
     Column(
         modifier = Modifier
@@ -81,7 +107,8 @@ fun Home(navController: NavHostController) {
                     searchHistory.add(text)
                 }
                 active = false
-                homeViewModel.getRepoList(BuildConfig.TOKEN, text, 1)
+                page = 1
+                homeViewModel.getRepoList(BuildConfig.TOKEN, text, page, ArrayList())
             },
             active = active,
             onActiveChange = {
@@ -134,6 +161,7 @@ fun Home(navController: NavHostController) {
         }
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn(
+            state = scrollState,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
             items(
@@ -142,11 +170,19 @@ fun Home(navController: NavHostController) {
                     RepoListItem(item = it)
                 })
 
-        }
+            // Add a loading item at the end
+            if (repoListResponse.value.isNotEmpty()) {
+                item {
+                    // Loading indicator or placeholder
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
 
-//        if (showProgress.value) {
-//            CircularProgressIndicator()
-//        }
+        }
 
 
 
