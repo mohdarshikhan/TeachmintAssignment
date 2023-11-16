@@ -29,6 +29,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            buildConfigField("String", "BASE_URL", "\"https://api.github.com\"")
+            buildConfigField("String", "TOKEN", "\"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\"")
+
+        }
+
+        debug {
+            buildConfigField("String", "BASE_URL", "\"https://api.github.com\"")
+            buildConfigField("String", "TOKEN", "\"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\"")
         }
     }
     compileOptions {
@@ -40,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
