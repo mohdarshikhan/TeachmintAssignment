@@ -1,5 +1,6 @@
 package com.mak.app.teachmintassignment.ui.home.view
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.gson.Gson
 import com.mak.app.teachmintassignment.BuildConfig
 import com.mak.app.teachmintassignment.domain.repo.model.Items
 import com.mak.app.teachmintassignment.domain.repo.model.RepoListResponse
@@ -167,7 +169,7 @@ fun Home(navController: NavHostController) {
             items(
                 items = repoListResponse.value,
                 itemContent = {
-                    RepoListItem(item = it)
+                    RepoListItem(item = it, navController)
                 })
 
             // Add a loading item at the end
@@ -196,14 +198,19 @@ fun PreviewHomeScreen() {
     Home(navController)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RepoListItem(item: Items) {
+fun RepoListItem(item: Items, navController: NavHostController) {
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 8.dp)
             .fillMaxWidth(),
 
-        shape = RoundedCornerShape(corner = CornerSize(16.dp))
+        shape = RoundedCornerShape(corner = CornerSize(16.dp)),
+        onClick = {
+            val json = Uri.encode(Gson().toJson(item))
+            navController.navigate("repoDetail/${json}")
+        }
 
     ) {
         Row {
