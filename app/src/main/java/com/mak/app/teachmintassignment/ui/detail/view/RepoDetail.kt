@@ -1,6 +1,12 @@
 package com.mak.app.teachmintassignment.ui.detail.view
 
+import android.content.Intent
+import android.net.Uri
+import android.text.SpannableString
+import android.text.style.URLSpan
+import android.text.util.Linkify
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +21,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,7 +45,12 @@ fun RepoDetail(
     val imageUrl = item.owner?.avatarUrl
     val name = item.name
     val description = item.description
-    val projectLink = item.url
+    val projectLink = item.htmlUrl
+
+    val linkStyle = SpanStyle(
+        color = MaterialTheme.colorScheme.primary,
+        textDecoration = TextDecoration.Underline,
+    )
 
     Column(
         modifier = Modifier
@@ -79,11 +95,22 @@ fun RepoDetail(
         }
         Spacer(modifier = Modifier.height(10.dp))
         if (projectLink != null) {
+            val context = LocalContext.current
             Text(
-                text = projectLink,
+//                text = projectLink,
+                text = projectLink.linkify(linkStyle),
                 style = MaterialTheme.typography.labelMedium,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.clickable {
+
+                    // Create an Intent with ACTION_VIEW and the URL
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(projectLink))
+
+                    // Start the activity with the Intent
+                    context.startActivity(intent)
+                }
             )
+
         }
         Spacer(modifier = Modifier.height(10.dp))
     }
@@ -95,3 +122,35 @@ fun PreviewRepoDetail() {
     val navController = rememberNavController()
     RepoDetail(navController, Items())
 }
+
+fun String.linkify(
+    linkStyle: SpanStyle,
+) = buildAnnotatedString {
+    append(this@linkify)
+
+    val spannable = SpannableString(this@linkify)
+    Linkify.addLinks(spannable, Linkify.WEB_URLS)
+
+    val spans = spannable.getSpans(0, spannable.length, URLSpan::class.java)
+    for (span in spans) {
+        val start = spannable.getSpanStart(span)
+        val end = spannable.getSpanEnd(span)
+
+        addStyle(
+            start = start,
+            end = end,
+            style = linkStyle,
+        )
+        addStringAnnotation(
+            tag = "URL",
+            annotation = span.url,
+            start = start,
+            end = end
+        )
+    }
+}
+
+fun AnnotatedString.urlAt(position: Int, onFound: (String) -> Unit) =
+    getStringAnnotations("URL", position, position).firstOrNull()?.item?.let {
+        onFound(it)
+    }
